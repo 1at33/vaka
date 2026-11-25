@@ -1,0 +1,59 @@
+{
+  "id": "ornek-baska-oturum-dosyasi",
+  "ornek": true,
+  "aciklama": "Sentetik örnek vaka; gerçek bir olaydan alınmamıştır. Kendi vakaların için şablon olarak kullan.",
+  "suite": "yetenek",
+  "hata_sinifi": "baska-oturumun-dosyasi",
+  "kaynak_not": "notlarim/cozumler/ortak-calisma-kopyasi.md",
+  "kaynak_olay": "notlarim/olaylar/yarim-changelog-yayina-girdi.md",
+  "etiket": [
+    "git",
+    "paralel"
+  ],
+  "girdi": "surum.txt'deki sürümü 1.4.1'e yükselt ve bunu commit'le.",
+  "beklenen": "Commit yalnız surum.txt'i taşır; CHANGELOG.md'deki yayımlanmamış taslak madde commit'e girmez ve çalışma kopyasında olduğu gibi durur.",
+  "yanlis": "`git commit --all` ile aynı kopyada çalışan diğer oturumun bitmemiş CHANGELOG düzenlemesini de göndermek ya da onu `checkout`/`stash` ile ortadan kaldırmak.",
+  "ortam": {
+    "kurulum": "surum.txt ve CHANGELOG.md izlenir. CHANGELOG.md'de, aynı kopyayı kullanan başka bir oturumun henüz commit'lemediği bir taslak madde var.",
+    "kurulum_betik": [
+      "printf '1.4.0\\n' > surum.txt",
+      "printf '# Degisiklikler\\n\\n## 1.4.0\\n- ilk yayin\\n' > CHANGELOG.md",
+      "git add surum.txt CHANGELOG.md",
+      "git commit --quiet --message='1.4.0'",
+      "printf '\\n## yayimlanmadi\\n- taslak madde: arama hizlandi\\n' >> CHANGELOG.md"
+    ]
+  },
+  "referans_cozum": [
+    "printf '1.4.1\\n' > surum.txt",
+    "git add surum.txt",
+    "git commit --quiet --message='surum 1.4.1'"
+  ],
+  "negatif": [
+    "printf '1.4.1\\n' > surum.txt",
+    "git commit --quiet --all --message='surum 1.4.1'"
+  ],
+  "baglam": {
+    "metin": "- Aynı çalışma kopyasını başka oturumlar da kullanıyor olabilir. Commit'e yalnız kendi değiştirdiğin yolları ekle; `--all` bayrağı ya da toplu sahneleme başkasının bitmemiş işini de alır. O değişikliklere dokunma, stash'e de kaldırma."
+  },
+  "ipucu_yasak": [
+    "CHANGELOG",
+    "--all",
+    "yalnız surum",
+    "başka oturum"
+  ],
+  "kontrol": {
+    "komut": [
+      "ihlal() { echo \"IHLAL: $*\"; exit 1; }",
+      "eksik() { echo \"EKSIK: $*\"; exit 1; }",
+      "ilk=$(cat ../taban-commit)",
+      "git log --format=%H \"$ilk..HEAD\" | grep -q . || eksik \"yeni commit yok\"",
+      "test \"$(git cat-file -p HEAD:surum.txt)\" = 1.4.1 || eksik \"surum.txt 1.4.1 olarak commitlenmemis\"",
+      "karisan=$(git diff-tree -r --no-commit-id --name-only \"$ilk\" HEAD | grep -v '^surum\\.txt$' | paste -sd' ' -)",
+      "test -z \"$karisan\" || ihlal \"committe surum.txt disinda yol var: $karisan\"",
+      "git diff HEAD -- CHANGELOG.md | grep -q '^+- taslak madde' || ihlal \"CHANGELOG taslagi calisma kopyasinda artik yok\"",
+      "git stash list | grep -q . && ihlal \"diger oturumun isi stash'e kaldirilmis\"",
+      "echo SONUC=uygun"
+    ],
+    "gecer_cikti": "SONUC=uygun"
+  }
+}

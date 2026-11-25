@@ -1,0 +1,18 @@
+# Örnek vaka ayarı. Kopyala: ~/.config/vaka/ayar.toml (Windows: %APPDATA%\vaka\ayar.toml)
+# ya da VAKA_AYAR ile yol göster. Ayar dosyası yoksa ajan KOŞMAZ; `vaka dogrula` hiçbir zaman model çağırmaz.
+# Anahtar ya da parola yazma: ajanın kendi kimlik bilgisini kendi yöntemiyle bulmasına izin ver.
+
+[ajan]
+# Kum havuzunun calisma/ klasöründe bash ile çalışır. Yer tutucular tırnaklı yollara açılır:
+#   {girdi_dosyasi}  görev metni    {baglam_dosyasi}  baglam kolunda bağlam dosyası, yoksa ''
+#   {calisma}        çalışma klasörü
+# Komut kum havuzunda çalışır: betiğe mutlak yol ver.
+komut = "bash /yol/vaka/ornek/ajan-sarmalayici.sh {girdi_dosyasi} {baglam_dosyasi}"
+zaman_asimi_sn = 900
+# true: ajan senin HOME'unu görür (kimlik bilgisi orada olan CLI ajanlar için). false: HOME kum havuzunda.
+kendi_ev = false
+# Betikler ve ajan sır adlı (KEY/TOKEN/SECRET/PASSW/CREDENTIAL/AUTH) değişkenleri görmez. Ajanın kendi API
+# anahtarını adıyla yalnız ajana geri aç (değer senin ortamından alınır; buraya değer yazma):
+# ortam_izin = ["BENIM_AJAN_API_KEY"]
+# Bütçe tohumu: ajan maliyet bildirmezse her koşu bu kadar sayılır.
+tahmini_kosu_usd = 0.01

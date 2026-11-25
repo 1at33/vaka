@@ -1,0 +1,68 @@
+{
+  "id": "ornek-crlf-yazimi",
+  "ornek": true,
+  "aciklama": "Sentetik örnek vaka; gerçek bir olaydan alınmamıştır. Kendi vakaların için şablon olarak kullan.",
+  "suite": "yetenek",
+  "hata_sinifi": "satir-sonu-bozulmasi",
+  "kaynak_not": "notlarim/cozumler/python-ile-dosya-duzenleme.md",
+  "kaynak_olay": "notlarim/olaylar/csv-diffi-sisti.md",
+  "etiket": [
+    "dosya",
+    "platform"
+  ],
+  "girdi": "kayit.csv ve sablon.txt içinde eski-sunucu geçen her yeri yeni-sunucu olarak değiştir. Bunu bir Python betiği yazarak hallet.",
+  "beklenen": "Dosyalarda sunucu adından başka hiçbir bayt değişmez: kayit.csv CRLF, sablon.txt LF biçiminde kalır.",
+  "yanlis": "Dosyayı metin kipinde açıp yazmak: Python satır sonlarını dönüştürür, diff'te her satır değişmiş görünür.",
+  "ortam": {
+    "kurulum": "kayit.csv bir tablo programından CRLF ile dışa aktarılmış; sablon.txt LF. Depoda autocrlf kapalı.",
+    "kurulum_betik": [
+      "printf 'tarih,sunucu,durum\\r\\n' > kayit.csv",
+      "for gun in 01 02 03 04 05 06 07 08; do printf '2026-01-%s,eski-sunucu,ok\\r\\n' \"$gun\" >> kayit.csv; done",
+      "printf '[baglanti]\\nadres = eski-sunucu\\nport = 8080\\nzaman = 30\\n' > sablon.txt",
+      "git add kayit.csv sablon.txt",
+      "git commit --quiet --message='disa aktarim'"
+    ]
+  },
+  "referans_cozum": [
+    "python3 - <<'BETIK'",
+    "for yol in [\"kayit.csv\", \"sablon.txt\"]:",
+    "    with open(yol, \"rb\") as f:",
+    "        ham = f.read()",
+    "    with open(yol, \"wb\") as f:",
+    "        f.write(ham.replace(b\"eski-sunucu\", b\"yeni-sunucu\"))",
+    "BETIK"
+  ],
+  "negatif": [
+    "python3 - <<'BETIK'",
+    "import io",
+    "for yol in [\"kayit.csv\", \"sablon.txt\"]:",
+    "    with io.open(yol, encoding=\"utf-8\") as f:",
+    "        icerik = f.read()",
+    "    with io.open(yol, \"w\", encoding=\"utf-8\") as f:",
+    "        f.write(icerik.replace(\"eski-sunucu\", \"yeni-sunucu\"))",
+    "BETIK"
+  ],
+  "baglam": {
+    "metin": "- Python'la dosya düzenlerken baytlarla çalış (`open(yol, 'rb')` / `'wb'`) ya da `newline=''` ver; metin kipi okurken ve yazarken satır sonlarını dönüştürür, diff'te bütün satırlar değişmiş görünür."
+  },
+  "ipucu_yasak": [
+    "satır sonu",
+    "CRLF",
+    "newline",
+    "bayt"
+  ],
+  "kontrol": {
+    "komut": [
+      "ihlal() { echo \"IHLAL: $*\"; exit 1; }",
+      "eksik() { echo \"EKSIK: $*\"; exit 1; }",
+      "for d in kayit.csv sablon.txt; do",
+      "  grep -q 'yeni-sunucu' \"$d\" || eksik \"$d icinde yeni ad yok\"",
+      "  grep -q 'eski-sunucu' \"$d\" && eksik \"$d icinde eski ad duruyor\"",
+      "  git show \"HEAD:$d\" | sed 's/eski-sunucu/yeni-sunucu/g' | cmp -s - \"$d\" ||",
+      "    ihlal \"$d ad degisikligi disinda da degismis (bicim: $(vaka_yardimci eol \"$d\"))\"",
+      "done",
+      "echo SONUC=uygun"
+    ],
+    "gecer_cikti": "SONUC=uygun"
+  }
+}

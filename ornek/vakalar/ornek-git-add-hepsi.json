@@ -1,0 +1,59 @@
+{
+  "id": "ornek-git-add-hepsi",
+  "ornek": true,
+  "aciklama": "Sentetik örnek vaka; gerçek bir olaydan alınmamıştır. Kendi vakaların için şablon olarak kullan.",
+  "suite": "yetenek",
+  "hata_sinifi": "ilgisiz-dosya-commit",
+  "kaynak_not": "notlarim/cozumler/sahneleme-kapsami.md",
+  "kaynak_olay": "notlarim/olaylar/csv-ciktisi-depoya-girdi.md",
+  "etiket": [
+    "git"
+  ],
+  "girdi": "fiyat.py'deki KDV oranını 0.20 yap ve değişikliği commit'le.",
+  "beklenen": "Yeni commit'in içinde fiyat.py'den başka yol yoktur; deneme-cikti.csv ile notlar/fikir.md diskte, izlenmeden durur.",
+  "yanlis": "Toplu sahneleme (`git add -A`, `git add .`): deneme çıktısı ve kişisel not da depoya girer.",
+  "ortam": {
+    "kurulum": "fiyat.py izlenir; yanında izlenmeyen bir deneme çıktısı ve bir kişisel not klasörü vardır.",
+    "kurulum_betik": [
+      "printf 'KDV = 0.18\\n\\n\\ndef brut(net):\\n    return net * (1 + KDV)\\n' > fiyat.py",
+      "git add fiyat.py",
+      "git commit --quiet --message='fiyat hesabi'",
+      "printf 'urun,adet\\nkalem,3\\n' > deneme-cikti.csv",
+      "mkdir notlar && printf 'belki indirim eklenir\\n' > notlar/fikir.md"
+    ]
+  },
+  "referans_cozum": [
+    "sed -i 's/KDV = 0.18/KDV = 0.20/' fiyat.py",
+    "git add fiyat.py",
+    "git commit --quiet --message='kdv orani guncellendi'"
+  ],
+  "negatif": [
+    "sed -i 's/KDV = 0.18/KDV = 0.20/' fiyat.py",
+    "git add --all",
+    "git commit --quiet --message='kdv orani guncellendi'"
+  ],
+  "baglam": {
+    "metin": "- Sahneye yalnız işin gerektirdiği yolları tek tek ekle. `git add -A` ya da `git add .` deneme çıktıları, kişisel notlar gibi izlenmeyen her şeyi de commit'e sokar."
+  },
+  "ipucu_yasak": [
+    "git add -A",
+    "yalnız fiyat",
+    "deneme-cikti",
+    "notlar"
+  ],
+  "kontrol": {
+    "komut": [
+      "ihlal() { echo \"IHLAL: $*\"; exit 1; }",
+      "eksik() { echo \"EKSIK: $*\"; exit 1; }",
+      "ilk=$(cat ../taban-commit)",
+      "test \"$(git log -1 --format=%H)\" != \"$ilk\" || eksik \"yeni commit bulunamadi\"",
+      "git grep -q 'KDV = 0.20' HEAD -- fiyat.py || eksik \"yeni oran commitlenmemis\"",
+      "for yol in $(git log --format= --name-only \"$ilk..HEAD\" | sort -u); do",
+      "  [ \"$yol\" = fiyat.py ] || ihlal \"isle ilgisiz yol commitlendi: $yol\"",
+      "done",
+      "test -e deneme-cikti.csv -a -e notlar/fikir.md || ihlal \"izlenmeyen dosyalar diskten silinmis\"",
+      "echo SONUC=uygun"
+    ],
+    "gecer_cikti": "SONUC=uygun"
+  }
+}

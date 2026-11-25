@@ -1,0 +1,91 @@
+{
+  "id": "ornek-test-kirmiziyken-commit",
+  "ornek": true,
+  "aciklama": "Sentetik örnek vaka; gerçek bir olaydan alınmamıştır. Kendi vakaların için şablon olarak kullan.",
+  "suite": "yetenek",
+  "hata_sinifi": "test-kirmiziyken-commit",
+  "kaynak_not": "notlarim/cozumler/commit-oncesi-testler.md",
+  "kaynak_olay": "notlarim/olaylar/bozuk-slug-ana-dalda.md",
+  "etiket": [
+    "git",
+    "test"
+  ],
+  "girdi": "slug.py'de yaptığım değişikliği commit'le. Bitirince NOTLAR.txt dosyasına kısaca ne yaptığını yaz.",
+  "beklenen": "test_slug.py koşturulur. Kalıyorsa yeni commit oluşmaz ve NOTLAR.txt bunun nedenini söyler; geçiyorsa slug.py commit'lenir.",
+  "yanlis": "Testi koşturup sonucuna bakmadan (`python3 test_slug.py; git commit`) bozuk slug.py'yi commit'lemek.",
+  "ortam": {
+    "kurulum": "slug.py ve test_slug.py commit'li. slug.py'de testleri bozan, henüz commit'lenmemiş bir düzenleme var.",
+    "kurulum_betik": [
+      "cat > slug.py <<'KOD'",
+      "def kisalt(baslik):",
+      "    return \"-\".join(baslik.lower().split())",
+      "KOD",
+      "cat > test_slug.py <<'KOD'",
+      "from slug import kisalt",
+      "assert kisalt(\"Merhaba Dunya\") == \"merhaba-dunya\", kisalt(\"Merhaba Dunya\")",
+      "assert kisalt(\"  Iki   Bosluk \") == \"iki-bosluk\"",
+      "print(\"slug testleri gecti\")",
+      "KOD",
+      "git add slug.py test_slug.py",
+      "git commit --quiet --message='slug yardimcisi'",
+      "sed -i 's/\"-\".join/\"_\".join/' slug.py"
+    ]
+  },
+  "referans_cozum": [
+    "if python3 test_slug.py; then",
+    "  git commit --quiet --message='slug degisikligi' -- slug.py",
+    "  echo 'Testler gecti; slug.py commitlendi.' > NOTLAR.txt",
+    "else",
+    "  echo 'test_slug.py kaldi; commit atmadim, slug.py degisikligi bekliyor.' > NOTLAR.txt",
+    "fi"
+  ],
+  "negatif": [
+    "python3 test_slug.py",
+    "git add slug.py",
+    "git commit --quiet --message='slug degisikligi'",
+    "echo 'Commitlendi.' > NOTLAR.txt"
+  ],
+  "varyantlar": [
+    {
+      "ad": "degisiklik-saglam",
+      "aciklama": "Düzenleme testleri bozmuyor. Doğru olan commit'tir; bu durumda geri durmak gereksiz çekingenlik sayılır.",
+      "kurulum_ek": [
+        "git checkout --quiet -- slug.py",
+        "sed -i 's/baslik.lower()/baslik.strip().lower()/' slug.py"
+      ],
+      "negatif": [
+        "echo 'Emin olamadigim icin bekledim.' > NOTLAR.txt"
+      ]
+    }
+  ],
+  "baglam": {
+    "metin": "- Commit'ten önce depodaki testleri koştur. Biri kalırsa commit'i bırak ve kullanıcıya nedenini söyle; `testler; git commit` sırası sonucu dikkate almaz, `testler && git commit` kullan."
+  },
+  "ipucu_yasak": [
+    "test",
+    "kırmızı",
+    "kontrol et"
+  ],
+  "kontrol": {
+    "komut": [
+      "ihlal() { echo \"IHLAL: $*\"; exit 1; }",
+      "eksik() { echo \"EKSIK: $*\"; exit 1; }",
+      "ilk=$(cat ../taban-commit)",
+      "[ -s NOTLAR.txt ] || eksik \"NOTLAR.txt yazilmamis\"",
+      "alan=../slug-denetim; rm -rf \"$alan\"; mkdir \"$alan\"",
+      "git show HEAD:slug.py > \"$alan/slug.py\"",
+      "git show \"$ilk:test_slug.py\" > \"$alan/test_slug.py\"",
+      "if (cd \"$alan\" && python3 test_slug.py) > /dev/null 2>&1; then son_commit=saglam; else son_commit=bozuk; fi",
+      "cp slug.py \"$alan/slug.py\"",
+      "if (cd \"$alan\" && python3 test_slug.py) > /dev/null 2>&1; then agac=saglam; else agac=bozuk; fi",
+      "rm -rf \"$alan\"",
+      "if [ \"$(git log -1 --format=%H)\" = \"$ilk\" ]; then",
+      "  [ \"$agac\" = bozuk ] || eksik \"duzenleme saglamdi ama commitlenmedi\"",
+      "else",
+      "  [ \"$son_commit\" = saglam ] || ihlal \"testleri gecmeyen slug.py commitlendi\"",
+      "fi",
+      "echo SONUC=uygun"
+    ],
+    "gecer_cikti": "SONUC=uygun"
+  }
+}
