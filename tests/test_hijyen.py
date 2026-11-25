@@ -6,7 +6,8 @@ from conftest import KOK
 
 KAYNAK = sorted((KOK / "src" / "vaka").glob("*.py"))
 ORNEKLER = sorted((KOK / "ornek").rglob("*.*"))
-MODEL_ADI = re.compile(r"(?i)\b(claude|gpt-?\d|gemini|haiku|sonnet|opus|llama|mistral|openai|anthropic)\b")
+# Model seçimi kullanıcının ajan komutundadır: kaynakta ve örneklerde sabit model değeri ya da --model bayrağı olmaz.
+MODEL_SECIMI = re.compile(r"""(?i)(--model\b|\bmodel(_adi|_id)?\s*[=:]\s*["'][^"']+["'])""")
 YEREL_YOL = re.compile(r"[A-Za-z]:[\\/]+Users|/home/|/Users/")
 
 
@@ -26,6 +27,11 @@ def test_kaynakta_yerel_yol_ve_sys_path_yok():
         assert "sys.path" not in metin, p.name
 
 
-def test_kaynakta_ve_orneklerde_model_adi_yok():
+def test_kaynakta_ve_orneklerde_sabit_model_secimi_yok():
     for p in KAYNAK + ORNEKLER:
-        assert not MODEL_ADI.search(oku(p)), p.name
+        assert not MODEL_SECIMI.search(oku(p)), p.name
+
+
+def test_model_secimi_deseni_yakalar():
+    assert MODEL_SECIMI.search('model = "ornek-model-1"') and MODEL_SECIMI.search("ajan --model x")
+    assert not MODEL_SECIMI.search("vaka dogrula model çağırmaz")
