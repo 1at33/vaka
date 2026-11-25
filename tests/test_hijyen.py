@@ -16,7 +16,8 @@ def oku(p):
 
 
 def test_kaynak_dosyalari_var():
-    assert {p.name for p in KAYNAK} >= {"cli.py", "bicim.py", "kum.py", "dogrula.py", "ajan.py", "butce.py"}
+    assert {p.name for p in KAYNAK} >= {"cli.py", "bicim.py", "kum.py", "dogrula.py", "ajan.py", "butce.py", "hakem.py",
+                                        "gunluk.py"}
     assert ORNEKLER
 
 

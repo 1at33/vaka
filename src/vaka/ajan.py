@@ -120,9 +120,10 @@ def tek_kosu(vaka, varyant, kol, ayar, ek_env=None):
         kaldir(kok)
 
 
-def ajan_kos(vaka, ayar, kol=None, tekrar=1, varyant_tekrar=None, butce=None, ek_env=None):
+def ajan_kos(vaka, ayar, kol=None, tekrar=1, varyant_tekrar=None, butce=None, ek_env=None, gozlemci=None):
     """Her senaryo `tekrar` kez koşar (varyantlar `varyant_tekrar`). Bütçe dolunca kalan koşular BAŞLAMAZ,
-    `atlandi_butce` olur: kaldı sayılmaz, orana girmez."""
+    `atlandi_butce` olur: kaldı sayılmaz, orana girmez. `gozlemci(satir)` her koşu (ya da atlanan koşu) biter
+    bitmez çağrılır (ör. olay günlüğü)."""
     if not ayar.komut:
         raise ValueError("ajan komutu yok: --ajan ver ya da ayar.toml'da [ajan] komut yaz")
     sonuclar = []
@@ -133,6 +134,8 @@ def ajan_kos(vaka, ayar, kol=None, tekrar=1, varyant_tekrar=None, butce=None, ek
             kimlik = butce.baslat() if butce is not None else None
             if butce is not None and kimlik is None:
                 sonuclar.append({"senaryo": senaryo, "deneme": n, "gecti": None, "atlandi_butce": True})
+                if gozlemci is not None:
+                    gozlemci(sonuclar[-1])
                 continue
             try:
                 s = tek_kosu(vaka, varyant, kol, ayar, ek_env)
@@ -143,6 +146,8 @@ def ajan_kos(vaka, ayar, kol=None, tekrar=1, varyant_tekrar=None, butce=None, ek
             if kimlik is not None:
                 butce.bitir(kimlik, s["maliyet_usd"])
             sonuclar.append({"deneme": n, **s})
+            if gozlemci is not None:
+                gozlemci(sonuclar[-1])
     kosan = [s for s in sonuclar if not s.get("atlandi_butce")]
     return {"id": vaka["id"], "kol": kol, "suite": vaka.get("suite"),
             "gecti": all(s["gecti"] for s in kosan) if kosan else None,

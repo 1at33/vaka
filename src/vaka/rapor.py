@@ -63,7 +63,7 @@ AJAN_BASLIK = ["vaka", "kol", "geçen/koşu", "ajan", "atlanan"]
 FARK_BASLIK = ["vaka", "baglam", "baglamsiz", "fark"]
 
 
-def markdown(mod, sonuc, butce=None):
+def markdown(mod, sonuc, butce=None, gunluk=None):
     if mod == "dogrulama":
         parca = ["# Vaka doğrulaması", "", md_tablo(dogrulama_satirlari(sonuc), DOGRULAMA_BASLIK)]
         sorun = [f"- `{s['id']}`: {p}" for s in sonuc for p in s["sorunlar"]]
@@ -79,6 +79,8 @@ def markdown(mod, sonuc, butce=None):
         parca += ["", "## Bağlamın katkısı", "", md_tablo(fark, FARK_BASLIK)]
     if butce:
         parca += ["", f"Harcanan: {butce['harcanan_usd']:.4f} USD / sınır {butce['sinir_usd']} USD"]
+    if gunluk:
+        parca += ["", f"Olay günlüğü: `{gunluk['dizin']}` (baş özeti `{gunluk['bas_ozet']}`)"]
     return "\n".join(parca) + "\n"
 
 
@@ -91,9 +93,13 @@ def dosya_yaz(yol, metin_):
         f.write(metin_.encode("utf-8"))
 
 
-def json_yaz(yol, mod, sonuc, butce=None):
-    dosya_yaz(yol, json.dumps({"mod": mod, "sonuc": sonuc, "butce": butce}, ensure_ascii=False, indent=2) + "\n")
+def json_yaz(yol, mod, sonuc, butce=None, gunluk=None):
+    """`gunluk` (dizin ve baş özeti) yalnız olay günlüğü tutulduysa eklenir; sonuç dosyası günlüğü bağlar."""
+    veri = {"mod": mod, "sonuc": sonuc, "butce": butce}
+    if gunluk is not None:
+        veri["gunluk"] = gunluk
+    dosya_yaz(yol, json.dumps(veri, ensure_ascii=False, indent=2) + "\n")
 
 
-def md_yaz(yol, mod, sonuc, butce=None):
-    dosya_yaz(yol, markdown(mod, sonuc, butce))
+def md_yaz(yol, mod, sonuc, butce=None, gunluk=None):
+    dosya_yaz(yol, markdown(mod, sonuc, butce, gunluk))
